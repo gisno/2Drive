@@ -120,17 +120,26 @@ def load_data():
 def main():
     st.title('Prijshistorie van onderdelen')
     
-    # Haal het wachtwoord op uit de Streamlit secrets
+
+    # Haal het correcte wachtwoord op uit de Streamlit secrets
     correct_password = st.secrets["auth"]["password"]
-    
-    # Maak een wachtwoordinvoer
-    password_input = st.text_input("Voer het wachtwoord in:", type="password")
 
-    if password_input != correct_password:
-        st.warning("Onjuist wachtwoord. Probeer opnieuw.")
-        st.stop()  # Stopt verdere uitvoering van de app als het wachtwoord fout is
+    # Controleer of de gebruiker al geauthenticeerd is
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
 
-    st.success("Wachtwoord correct! Je kunt nu de prijshistorie bekijken.")
+    if not st.session_state.authenticated:
+        # Vraag om het wachtwoord
+        password_input = st.text_input("Voer het wachtwoord in:", type="password")
+
+        if st.button("Inloggen"):
+            if password_input == correct_password:
+                st.session_state.authenticated = True
+                st.rerun()  # Vernieuw de app zodat het wachtwoordveld verdwijnt
+            else:
+                st.warning("Onjuist wachtwoord. Probeer opnieuw.")
+                st.session_state.authenticated = False
+        return  # Stop de rest van de app als gebruiker nog niet is ingelogd
     data = load_data()
 
     onderdeelnummer = st.text_input('Voer het onderdeelnummer in:')
